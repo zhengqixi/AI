@@ -1,6 +1,7 @@
 from node import Node
 from typing import Tuple, List, Dict, FrozenSet
-
+from random import shuffle
+from os import linesep
 
 class ParserException(Exception):
     def __init__(self, *args: object) -> None:
@@ -9,16 +10,13 @@ class ParserException(Exception):
 
 class Parser:
 
-    def __init__(self, filename: str) -> None:
-        self._filename = filename
-
-    def generate_from_file(self) -> Node:
+    def generate_from_file(self, filename: str) -> Node:
         """
         generate_from_file takes in a file, parses it and returns the root node.
         """
         all_nodes = {}
         nodes_with_children = {}
-        with open(self._filename, 'r') as file:
+        with open(filename, 'r') as file:
             for line in file:
                 if ':' in line:
                     node, children = self._parse_internal(line)
@@ -34,6 +32,34 @@ class Parser:
                             'node {} duplicate'.format(node.label))
                     all_nodes[node.label] = node
         return self._validate_graph(all_nodes, nodes_with_children)
+    
+    def write_to_file(self, root: Node, filename: str, shuffle: bool = False) -> None:
+        """
+        Serialize the tree to a file.
+        For variety, set shuffle to true
+        """
+        data = self._traverse_tree_for_write(root)
+        if shuffle:
+            shuffle(data)
+        to_write = linesep.join(data)
+        with open(filename, 'w') as file:
+            file.write(to_write)
+    
+    def _traverse_tree_for_write(self, start: Node) -> List[str]:
+        return_val = []
+        if start is None:
+            return return_val
+        if start.is_leaf:
+            output_str = '{}={}'.format(start.label, start.value)
+            return_val.append(output_str)
+        else:
+            children = '[{}]'.format(', '.join([x.label for x in start.children]))
+            output_str = '{}: {}'.format(start.label, children)
+            return_val.append(output_str)
+            for x in start.children:
+                return_val.extend(self._traverse_tree_for_write(x))
+        
+        return return_val
 
     def _validate_graph(
             self, all_nodes: Dict[str, Node], nodes_with_children: Dict[str, FrozenSet[str]]) -> Node:

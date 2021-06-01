@@ -24,8 +24,8 @@ class Node:
         return self._value
 
     @property
-    def is_child(self) -> bool:
-        return self._children is not None
+    def is_leaf(self) -> bool:
+        return self._children is None
 
     @property
     def children(self) -> List['Node']:
