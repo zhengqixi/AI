@@ -31,15 +31,51 @@ class Parser:
                         raise ParserException(
                             'node {} duplicate'.format(node.label))
                     all_nodes[node.label] = node
-        return self._validate_graph(all_nodes, nodes_with_children)
+        return self._construct_graph(all_nodes, nodes_with_children)
+
+    def _construct_graph(
+            self, all_nodes: Dict[str, Node], nodes_with_children: Dict[str, FrozenSet[str]]) -> Node:
+        """
+        Constructs the graph from the parsed file
+        Does cycle detection
+        """
+        try:
+            nodes_with_parents = set()
+            for label in nodes_with_children.keys():
+                node = all_nodes[label]
+                children_labels = nodes_with_children[label]
+                children_nodes = [all_nodes[x] for x in children_labels]
+                node.children = children_nodes
+                nodes_with_parents = nodes_with_parents | children_labels
+            root_set = set(all_nodes.keys()) - nodes_with_parents
+            if len(root_set) != 1:
+                raise ParserException('Root node not found')
+            root_node = all_nodes[root_set.pop()]
+            self._check_cycle(root_node, set())
+            return root_node
+        except KeyError as e:
+            raise ParserException from e
+        
+    def _check_cycle(self, start: Node, seen_nodes: FrozenSet[str]) -> None:
+        """
+        Check the graph for cycles using a DFS
+        """
+        if start.label in seen_nodes:
+            raise ParserException('Cycle detected')
+        if start.is_leaf is not True:
+            for child in start.children:
+                updated_nodes = seen_nodes.union([start.label])
+                self._check_cycle(child, updated_nodes)
     
-    def write_to_file(self, root: Node, filename: str, shuffle: bool = False) -> None:
+        
+    
+    def write_to_file(self, root: Node, filename: str, shuffle_output: bool = False) -> None:
         """
         Serialize the tree to a file.
-        For variety, set shuffle to true
+        For variety, set shuffle_output to true
         """
         data = self._traverse_tree_for_write(root)
-        if shuffle:
+        if shuffle_output:
             shuffle(data)
         to_write = linesep.join(data)
         with open(filename, 'w') as file:
@@ -60,33 +96,6 @@ class Parser:
                 return_val.extend(self._traverse_tree_for_write(x))
         
         return return_val
-
-    def _validate_graph(
-            self, all_nodes: Dict[str, Node], nodes_with_children: Dict[str, FrozenSet[str]]) -> Node:
-        """
-        Run validations against the parsed graph
-        """
-        try:
-            nodes_with_parents = set()
-            for label in nodes_with_children.keys():
-                node = all_nodes[label]
-                children_labels = nodes_with_children[label]
-                children_nodes = [all_nodes[x] for x in children_labels]
-                node.children = children_nodes
-                new_nodes_with_parents = nodes_with_parents | children_labels
-                if len(new_nodes_with_parents) != (
-                        len(nodes_with_parents) + len(children_labels)):
-                    # This would mean that there is a duplicate between nodes we've already seen
-                    # and a new children label node
-                    # likely a cycle
-                    raise ParserException('Cycle likely...')
-                nodes_with_parents = new_nodes_with_parents
-            root_set = set(all_nodes.keys()) - nodes_with_parents
-            if len(root_set) != 1:
-                raise ParserException('Root node not found')
-            return all_nodes[root_set.pop()]
-        except KeyError as e:
-            raise ParserException from e
 
     def _parse_leaf(self, line: str) -> Node:
         """
