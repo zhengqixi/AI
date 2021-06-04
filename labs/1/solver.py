@@ -48,8 +48,9 @@ class Solver:
         if select_type == SolveType.MAX:
             return SolveType.MIN
         return SolveType.MAX
-    
-    def _print(self, start_node: Node, choice: Node, value: int, select_type: 'SolveType') -> None:
+
+    def _print(self, start_node: Node, choice: Node, value: int,
+               select_type: 'SolveType') -> None:
         chooses_str = 'chooses {} for {}'.format(choice.label, value)
         if select_type == SolveType.MIN:
             print('min({}) {}'.format(start_node.label, chooses_str))

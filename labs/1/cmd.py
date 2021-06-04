@@ -22,4 +22,5 @@ class CMD:
         root = self._parser.generate_from_file(self._input_file)
         self._solver.solve(root, self._solver_type, self._prune, self._verbose)
 
-CMD('test1.test', 'max', False, True).execute()
+
+CMD('test.test', 'min', False, True).execute()
