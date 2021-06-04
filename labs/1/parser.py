@@ -3,6 +3,7 @@ from typing import Tuple, List, Dict, FrozenSet
 from random import shuffle
 from os import linesep
 
+
 class ParserException(Exception):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
@@ -55,7 +56,7 @@ class Parser:
             return root_node
         except KeyError as e:
             raise ParserException from e
-        
+
     def _check_cycle(self, start: Node, seen_nodes: FrozenSet[str]) -> None:
         """
         Check the graph for cycles using a DFS
@@ -66,10 +67,9 @@ class Parser:
             for child in start.children:
                 updated_nodes = seen_nodes.union([start.label])
                 self._check_cycle(child, updated_nodes)
-    
-        
-    
-    def write_to_file(self, root: Node, filename: str, shuffle_output: bool = False) -> None:
+
+    def write_to_file(self, root: Node, filename: str,
+                      shuffle_output: bool = False) -> None:
         """
         Serialize the tree to a file.
         For variety, set shuffle_output to true
@@ -80,7 +80,7 @@ class Parser:
         to_write = linesep.join(data)
         with open(filename, 'w') as file:
             file.write(to_write)
-    
+
     def _traverse_tree_for_write(self, start: Node) -> List[str]:
         return_val = []
         if start is None:
@@ -89,12 +89,13 @@ class Parser:
             output_str = '{}={}'.format(start.label, start.value)
             return_val.append(output_str)
         else:
-            children = '[{}]'.format(', '.join([x.label for x in start.children]))
+            children = '[{}]'.format(
+                ', '.join([x.label for x in start.children]))
             output_str = '{}: {}'.format(start.label, children)
             return_val.append(output_str)
             for x in start.children:
                 return_val.extend(self._traverse_tree_for_write(x))
-        
+
         return return_val
 
     def _parse_leaf(self, line: str) -> Node:
