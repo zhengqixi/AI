@@ -1,5 +1,6 @@
-from solver import Solver, SolveType
+from solver import Solver, SolveType, SolveStep
 from parser import Parser
+from queue import Queue
 
 
 class CMD:
@@ -20,7 +21,27 @@ class CMD:
 
     def execute(self):
         root = self._parser.generate_from_file(self._input_file)
-        self._solver.solve(root, self._solver_type, self._prune, self._verbose)
+        steps = self._solver.solve(
+            root, self._solver_type, self._prune)
+        self._print(steps, self._verbose)
+
+    def _print(self, steps: 'Queue[SolveStep]', verbose: bool) -> None:
+        if verbose:
+            while steps.empty() == False:
+                self._print_step(steps.get())
+        else:
+            last_step = None
+            while steps.empty() == False:
+                last_step = steps.get()
+            self._print_step(last_step)
+
+    def _print_step(self, step: SolveStep) -> None:
+        chooses_str = 'chooses {} for {}'.format(
+            step.selected.label, step.value)
+        if step.select_type == SolveType.MIN:
+            print('min({}) {}'.format(step.parent.label, chooses_str))
+        else:
+            print('max({}) {}'.format(step.parent.label, chooses_str))
 
 
-CMD('test.test', 'min', False, True).execute()
+CMD('test.test', 'max', True, True).execute()

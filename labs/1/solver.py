@@ -1,6 +1,8 @@
 from node import Node
 from enum import Enum
 from typing import List, Tuple
+from math import inf
+from queue import Queue
 
 
 class SolveType(Enum):
@@ -8,29 +10,56 @@ class SolveType(Enum):
     MIN = 1
 
 
+class SolveStep:
+    def __init__(self, parent: Node, selected: Node,
+                 select_type: 'SolveType', value: int) -> None:
+        self._parent = parent
+        self._selected = selected
+        self._select_type = select_type
+        self._value = value
+
+    @property
+    def parent(self) -> Node:
+        return self._parent
+
+    @property
+    def selected(self) -> Node:
+        return self._selected
+
+    @property
+    def select_type(self) -> 'SolveType':
+        return self._select_type
+
+    @property
+    def value(self) -> int:
+        return self._value
+
+
 class Solver:
 
     def solve(self, start: Node, start_type: 'SolveType',
-              prune: bool = False, verbose: bool = False) -> None:
+              prune: bool = False) -> 'Queue[SolveStep]':
         if prune == True:
-            self._alpha_beta(start, start_type, verbose)
+            return self._alpha_beta(start, start_type)
         else:
-            self._minimax(start, start_type, verbose)
+            return self._minimax(start, start_type)
 
-    def _minimax(self, start: Node, start_type: 'SolveType',
-                 verbose: bool) -> Tuple[Node, int]:
-        # If we're a leaf node...not much choice here
+    def _minimax(self, start: Node,
+                 start_type: 'SolveType') -> 'Queue[SolveStep]':
+        queue = Queue()
+        self._minimax_step(start, start_type, queue)
+        return queue
+
+    def _minimax_step(self, start: Node, start_type: 'SolveType',
+                      steps: 'Queue[SolveStep]') -> Tuple[Node, int]:
         if start.is_leaf:
             return [start, start.value]
         next_level_type = self._switch_type(start_type)
-        traverse_results = [
-            self._minimax(
-                x,
-                next_level_type,
-                verbose) for x in start.children]
+        traverse_results = [self._minimax_step(
+            x, next_level_type, steps) for x in start.children]
         should_choose = self._selector(traverse_results, start_type)
-        if verbose == True:
-            self._print(start, should_choose[0], should_choose[1], start_type)
+        step = SolveStep(start, should_choose[0], start_type, should_choose[1])
+        steps.put(step)
         return [start, should_choose[1]]
 
     def _selector(self, nodes: List[Tuple[Node, int]],
@@ -40,19 +69,42 @@ class Solver:
         else:
             return min(nodes, key=lambda k: k[1])
 
-    def _alpha_beta(self, start: Node, start_type: 'SolveType',
-                    verbose: bool) -> Tuple[Node, int]:
-        raise NotImplementedError("oh nodes")
+    def _alpha_beta(self, start: Node, start_type: 'SolveType') -> 'Queue[SolveStep]':
+        queue = Queue()
+        self._alpha_beta_step(start, start_type, -inf, inf, queue)
+        return queue
+
+    def _alpha_beta_step(self, start: Node, start_type: 'SolveType',
+                         alpha: int, beta: int, steps: 'Queue[SolveStep]') -> Tuple[Node, int]:
+        if start.is_leaf:
+            return [start, start.value]
+        next_level_type = self._switch_type(start_type)
+        if start_type == SolveType.MAX:
+            chosen_set = [None, -inf]
+            for child in start.children:
+                chosen = self._alpha_beta_step(
+                    child, next_level_type, alpha, beta, steps)
+                chosen_set = max(chosen, chosen_set, key=lambda k: k[1])
+                if chosen_set[1] >= beta:
+                    break
+                alpha = chosen_set[1] 
+            step = SolveStep(start, chosen_set[0], start_type, chosen_set[1])
+            steps.put(step)
+            return [start, chosen_set[1]]
+        else:
+            chosen_set = [None, inf]
+            for child in start.children:
+                chosen = self._alpha_beta_step(
+                    child, next_level_type, alpha, beta, steps)
+                chosen_set = min(chosen, chosen_set, key=lambda k: k[1])
+                if chosen_set[1] <= alpha:
+                    break
+                beta =chosen_set[1]
+            step = SolveStep(start, chosen_set[0], start_type, chosen_set[1])
+            steps.put(step)
+            return [start, chosen_set[1]]
 
     def _switch_type(self, select_type: 'SolveType') -> 'SolveType':
         if select_type == SolveType.MAX:
             return SolveType.MIN
         return SolveType.MAX
-
-    def _print(self, start_node: Node, choice: Node, value: int,
-               select_type: 'SolveType') -> None:
-        chooses_str = 'chooses {} for {}'.format(choice.label, value)
-        if select_type == SolveType.MIN:
-            print('min({}) {}'.format(start_node.label, chooses_str))
-        else:
-            print('max({}) {}'.format(start_node.label, chooses_str))
