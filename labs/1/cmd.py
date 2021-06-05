@@ -51,6 +51,3 @@ class CMD:
             print('min({}) {}'.format(step.parent.label, chooses_str))
         else:
             print('max({}) {}'.format(step.parent.label, chooses_str))
-
-
-CMD('test.test', 'min', True, True).execute()
