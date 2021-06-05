@@ -83,6 +83,10 @@ class Parser:
             file.write(to_write)
 
     def _traverse_tree_for_write(self, start: Node) -> List[str]:
+        """
+        Recursively traverses the tree, generate a list of strings
+        representing the nodes traversed
+        """
         return_val = []
         if start is None:
             return return_val

@@ -20,12 +20,18 @@ class CMD:
             raise Exception('invalid type')
 
     def execute(self):
+        """
+        Execute minimax search on graph
+        """
         root = self._parser.generate_from_file(self._input_file)
         steps = self._solver.solve(
             root, self._solver_type, self._prune)
         self._print(steps, self._verbose)
 
     def _print(self, steps: 'Queue[SolveStep]', verbose: bool) -> None:
+        """
+        Print the entire output from traversal
+        """
         if verbose:
             while steps.empty() == False:
                 self._print_step(steps.get())
@@ -36,6 +42,9 @@ class CMD:
             self._print_step(last_step)
 
     def _print_step(self, step: SolveStep) -> None:
+        """
+        Print a single traversal step
+        """
         chooses_str = 'chooses {} for {}'.format(
             step.selected.label, step.value)
         if step.select_type == SolveType.MIN:
@@ -44,4 +53,4 @@ class CMD:
             print('max({}) {}'.format(step.parent.label, chooses_str))
 
 
-CMD('test.test', 'max', True, True).execute()
+CMD('test.test', 'min', True, True).execute()
