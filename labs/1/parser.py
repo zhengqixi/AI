@@ -10,6 +10,10 @@ class ParserException(Exception):
 
 
 class Parser:
+    """
+    Parser contains functionality to parse DAG files, and write
+    nodes to DAG files
+    """
 
     def generate_from_file(self, filename: str) -> Node:
         """
@@ -46,7 +50,6 @@ class Parser:
                 node = all_nodes[label]
                 children_labels = nodes_with_children[label]
                 children_nodes = [all_nodes[x] for x in children_labels]
-                children_nodes.sort(key=lambda k: k.label)
                 node.children = children_nodes
                 nodes_with_parents = nodes_with_parents | children_labels
             root_set = set(all_nodes.keys()) - nodes_with_parents

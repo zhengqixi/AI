@@ -9,6 +9,10 @@ class NodeException(Exception):
 
 class Node:
 
+    """
+    Node represents a node in the DAG
+    """
+
     def __init__(self, label: str, value: int = None,
                  children: List['Node'] = None) -> None:
         self._label = label
