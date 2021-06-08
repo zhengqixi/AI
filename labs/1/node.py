@@ -22,10 +22,18 @@ class Node:
     @property
     def label(self) -> str:
         return self._label
+    
+    @label.setter
+    def label(self, label: str) -> None:
+        self._label = label
 
     @property
     def value(self) -> int:
         return self._value
+
+    @value.setter
+    def value(self, value: int) -> None:
+        self._value = value
 
     @property
     def is_leaf(self) -> bool:
