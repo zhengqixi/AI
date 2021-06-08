@@ -1,7 +1,144 @@
 from enum import Enum
-class BoardState(Enum):
+from typing import List, Tuple
+
+
+class TileState(Enum):
     X = 1
     O = -1
     EMPTY = 0
-class TicTacToeState:
-    pass
+
+
+class TicTacToeBoard:
+    def __init__(self) -> None:
+        self._board = [[TileState.EMPTY for _ in range(3)] for _ in range(3)]
+
+    def set(self, row: int, column: int, state: TileState) -> None:
+        self._board[row][column] = state
+
+    def empty_tiles(self) -> List[Tuple[int, int]]:
+        empty_tiles = []
+        for row in range(3):
+            for column in range(3):
+                if self._board[row][column] == TileState.EMPTY:
+                    empty_tiles.append([row, column])
+        return empty_tiles
+
+    def check_win(self, player: TileState) -> bool:
+        for i in range(3):
+            if self._check_list(self._board[i], player):
+                return True
+            if self._check_column(i, player):
+                return True
+        diagonal = [self._board[row][column]
+                    for row in range(3) for column in range(3)]
+        if self._check_list(diagonal, player):
+            return True
+        diagonal = [self._board[row][column]
+                    for row in range(3) for column in range(2, -1, -1)]
+        if self._check_list(diagonal, player):
+            return True
+        return False
+
+    def _check_list(self, data: List[TileState], player: TileState) -> bool:
+        return len([x for x in data if x == player]) == len(data)
+
+    def _check_column(self, column: int, player: TileState) -> bool:
+        return self._check_list(self._get_column(column), player)
+
+    def _copy(self) -> 'TicTacToeBoard':
+        new_board = TicTacToeBoard()
+        for row in range(3):
+            for column in range(3):
+                new_board._board[row][column] = self._board[row][column]
+
+    def _set_row(self, row_num: int, row: List[TileState]) -> List[TileState]:
+        original = self._board[row_num]
+        self._board[row_num] = row
+        return original
+
+    def _set_column(self, column_num: int,
+                    column: List[TileState]) -> List[TileState]:
+        original = [self._board[column_num][x] for x in range(3)]
+        for i in range(3):
+            self._board[column_num][i] = column[i]
+        return original
+
+    def _get_column(self, column_num: int) -> List[TileState]:
+        return [self._board[column_num][x] for x in range(3)]
+
+    def x_flip(self) -> 'TicTacToeBoard':
+        """
+        Create a copy of the current board, and flip along the x-axis
+        This is done by swapping the following (row, column) pairs:
+        (0,0) <-> (2,0)
+        (0,1) <-> (2,1)
+        (0,2) <-> (2,2)
+        """
+        new_board = self._copy()
+        new_board._board[0][0], new_board._board[2][0] = new_board._board[2][0], new_board._board[0][0]
+        new_board._board[0][1], new_board._board[2][1] = new_board._board[2][1], new_board._board[0][1]
+        new_board._board[0][2], new_board._board[2][2] = new_board._board[2][2], new_board._board[0][2]
+        return new_board
+
+    def y_flip(self) -> 'TicTacToeBoard':
+        """
+        Create a copy of the current board, and flip along the y-axis
+        This is done by swapping the following (row, column) pairs:
+        (0,0) <-> (0,2)
+        (1,0) <-> (1,2)
+        (2,0) <-> (2,2)
+        """
+        new_board = self._copy()
+        new_board._board[0][0], new_board._board[0][2] = new_board._board[0][2], new_board._board[0][0]
+        new_board._board[1][0], new_board._board[1][2] = new_board._board[1][2], new_board._board[1][0]
+        new_board._board[2][0], new_board._board[2][2] = new_board._board[2][2], new_board._board[2][0]
+        return new_board
+
+    def rotate_ccw_90(self) -> 'TicTacToeBoard':
+        new_board = self._copy()
+        new_board._rotate_ccw_90()
+        return new_board
+
+    def _rotate_ccw_90(self) -> None:
+        left_column = self._get_column(0)
+        bottom_row = self._set_row(2, left_column).reverse()
+        right_column = self._set_column(2, bottom_row)
+        top_row = self._set_row(0, right_column).reverse()
+        self._set_column(0, top_row)
+
+    def rotate_ccw_180(self) -> 'TicTacToeBoard':
+        new_board = self.rotate_ccw_90()
+        new_board._rotate_ccw_90()
+        return new_board
+
+    def rotate_cw_90(self) -> 'TicTacToeBoard':
+        """
+        Create a copy of the current board, and rotates cw 90
+        """
+        new_board = self._copy()
+        new_board._rotate_cw_90()
+        return new_board
+
+    def _rotate_cw_90(self) -> None:
+        """
+        Rotates self cw 90
+        """
+
+        left_column = self._get_column(0).reverse()
+        top_row = self._set_row(0, left_column)
+        right_column = self._set_column(2, top_row).reverse()
+        bottom_row = self._set_row(2, right_column)
+        self._set_column(0, bottom_row)
+
+    def rotate_cw_180(self) -> 'TicTacToeBoard':
+        """
+        Create a copy of the current board, and rotates cw 180
+        """
+        new_board = self.rotate_cw_90()
+        new_board._rotate_cw_90()
+        return new_board
+
+    def hash(self) -> str:
+        flattened = [*self._board[0], *self._board[1], *self._board[2]]
+        flattened_str = [str(x) for x in flattened]
+        return ';'.join(flattened_str)

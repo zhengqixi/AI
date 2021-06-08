@@ -7,6 +7,7 @@ class CMD:
     """
     CMD handles executing command line arguments
     """
+
     def __init__(self, input_file: str, solver_type: str,
                  prune: bool, verbose: bool) -> None:
         self._solver_type = solver_type
