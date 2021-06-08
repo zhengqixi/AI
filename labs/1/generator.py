@@ -34,13 +34,18 @@ class Generator:
         parent_label = parent.label
         children = []
         for move in moves:
-            child_label = parent_label + self._notation(move[0], move[1])
-            child_node = Node(child_label)
-            children.append(child_node)
             board.set(move[0], move[1], player)
-            self._level(child_node, board, other_player, level + 1)
+            child_node = self._check_cache(board)
+            if child_node is not None:
+                children.append(child_node)
+            else:
+                child_label = parent_label + self._notation(move[0], move[1])
+                child_node = Node(child_label)
+                children.append(child_node)
+                self._cache_board(board, child_node)
+                self._level(child_node, board, other_player, level + 1)
             board.set(move[0], move[1], TileState.EMPTY)
-        parent.children = children
+        parent.children = [x for x in {x.label: x for x in children}.values()]
 
     def _switch_player(self, player: TileState) -> TileState:
         if player == TileState.X:
@@ -60,6 +65,23 @@ class Generator:
         elif player == TileState.EMPTY:
             return 0
         raise Exception('bruuhh')
+    
+    def _check_cache(self, board: TicTacToeBoard) -> Node:
+        hash = board.hash()
+        if hash in self._cache:
+            return self._cache[hash]
+        return None
+    
+    def _cache_board(self, board: TicTacToeBoard, node: Node) -> None:
+        self._cache[board.hash()] = node
+        self._cache[board.x_flip().hash()] = node
+        self._cache[board.y_flip().hash()] = node
+        self._cache[board.rotate_ccw_90().hash()] = node
+        self._cache[board.rotate_ccw_180().hash()] = node
+        #self._cache[board.rotate_cw_90().hash()] = node
+        #self._cache[board.rotate_cw_180().hash()] = node
+
+
 if __name__ == '__main__':
     root = Generator(TileState.X).generate()
     parser = Parser()

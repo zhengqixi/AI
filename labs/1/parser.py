@@ -79,6 +79,7 @@ class Parser:
         For variety, set shuffle_output to true
         """
         data = self._traverse_tree_for_write(root)
+        data = [x for x in set(data)]
         if shuffle_output:
             shuffle(data)
         to_write = linesep.join(data)
