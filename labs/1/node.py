@@ -22,7 +22,7 @@ class Node:
     @property
     def label(self) -> str:
         return self._label
-    
+
     @label.setter
     def label(self, label: str) -> None:
         self._label = label

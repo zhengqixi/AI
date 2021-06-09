@@ -65,21 +65,23 @@ class Generator:
         elif player == TileState.EMPTY:
             return 0
         raise Exception('bruuhh')
-    
+
     def _check_cache(self, board: TicTacToeBoard) -> Node:
         hash = board.hash()
         if hash in self._cache:
             return self._cache[hash]
         return None
-    
+
     def _cache_board(self, board: TicTacToeBoard, node: Node) -> None:
         self._cache[board.hash()] = node
         self._cache[board.x_flip().hash()] = node
         self._cache[board.y_flip().hash()] = node
         self._cache[board.rotate_ccw_90().hash()] = node
         self._cache[board.rotate_ccw_180().hash()] = node
-        #self._cache[board.rotate_cw_90().hash()] = node
-        #self._cache[board.rotate_cw_180().hash()] = node
+        self._cache[board.rotate_ccw_270().hash()] = node
+        self._cache[board.rotate_cw_90().hash()] = node
+        self._cache[board.rotate_cw_180().hash()] = node
+        self._cache[board.rotate_cw_270().hash()] = node
 
 
 if __name__ == '__main__':

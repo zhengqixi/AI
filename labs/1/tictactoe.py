@@ -52,17 +52,16 @@ class TicTacToeBoard:
                 new_board._board[row][column] = self._board[row][column]
         return new_board
 
-    def _set_row(self, row_num: int, row: List[TileState]) -> List[TileState]:
-        original = self._board[row_num]
+    def _set_row(self, row_num: int, row: List[TileState]) -> None:
         self._board[row_num] = row
-        return original
+
+    def _get_row(self, row_num: int) -> List[TileState]:
+        return self._board[row_num].copy()
 
     def _set_column(self, column_num: int,
-                    column: List[TileState]) -> List[TileState]:
-        original = [self._board[x][column_num] for x in range(3)]
+                    column: List[TileState]) -> None:
         for i in range(3):
             self._board[i][column_num] = column[i]
-        return original
 
     def _get_column(self, column_num: int) -> List[TileState]:
         return [self._board[x][column_num] for x in range(3)]
@@ -102,15 +101,23 @@ class TicTacToeBoard:
 
     def _rotate_ccw_90(self) -> None:
         left_column = self._get_column(0)
-        bottom_row = self._set_row(2, left_column)
+        bottom_row = self._get_row(2)
+        right_column = self._get_column(2)
+        top_row = self._get_row(0)
+        self._set_row(2, left_column)
         bottom_row.reverse()
-        right_column = self._set_column(2, bottom_row)
-        top_row = self._set_row(0, right_column)
+        self._set_column(2, bottom_row)
+        self._set_row(0, right_column)
         top_row.reverse()
         self._set_column(0, top_row)
 
     def rotate_ccw_180(self) -> 'TicTacToeBoard':
         new_board = self.rotate_ccw_90()
+        new_board._rotate_ccw_90()
+        return new_board
+
+    def rotate_ccw_270(self) -> 'TicTacToeBoard':
+        new_board = self.rotate_ccw_180()
         new_board._rotate_ccw_90()
         return new_board
 
@@ -126,13 +133,15 @@ class TicTacToeBoard:
         """
         Rotates self cw 90
         """
-
         left_column = self._get_column(0)
+        bottom_row = self._get_row(2)
+        right_column = self._get_column(2)
+        top_row = self._get_row(0)
         left_column.reverse()
-        top_row = self._set_row(0, left_column)
-        right_column = self._set_column(2, top_row)
+        self._set_row(0, left_column)
+        self._set_column(2, top_row)
         right_column.reverse()
-        bottom_row = self._set_row(2, right_column)
+        self._set_row(2, right_column)
         self._set_column(0, bottom_row)
 
     def rotate_cw_180(self) -> 'TicTacToeBoard':
@@ -143,7 +152,25 @@ class TicTacToeBoard:
         new_board._rotate_cw_90()
         return new_board
 
+    def rotate_cw_270(self) -> 'TicTacToeBoard':
+        new_board = self.rotate_cw_180()
+        new_board._rotate_cw_90()
+        return new_board
+
     def hash(self) -> str:
         flattened = [*self._board[0], *self._board[1], *self._board[2]]
         flattened_str = [str(x) for x in flattened]
         return ';'.join(flattened_str)
+
+
+if __name__ == '__main__':
+    board = TicTacToeBoard()
+    board.set(0, 0, TileState.X)
+    board.set(1, 0, TileState.X)
+    board.set(2, 0, TileState.X)
+    board.set(2, 1, TileState.O)
+    board.set(2, 2, TileState.O)
+    board2 = board.rotate_ccw_90()
+    board3 = board.rotate_cw_90()
+    board4 = board3.rotate_cw_90()
+    print('over')
