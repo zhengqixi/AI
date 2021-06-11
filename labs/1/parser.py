@@ -53,13 +53,16 @@ class Parser:
                 node.children = children_nodes
                 nodes_with_parents = nodes_with_parents | children_labels
             root_set = set(all_nodes.keys()) - nodes_with_parents
-            if len(root_set) != 1:
+            num_roots = len(root_set)
+            if num_roots == 0:
                 raise ParserException('Root node not found')
+            if num_roots > 1:
+                raise ParserException('Multiple root nodes found')
             root_node = all_nodes[root_set.pop()]
             self._check_cycle(root_node, set())
             return root_node
         except KeyError as e:
-            raise ParserException from e
+            raise ParserException('missing node: {}'.format(e.args[0]))
 
     def _check_cycle(self, start: Node, seen_nodes: FrozenSet[str]) -> None:
         """
@@ -79,6 +82,10 @@ class Parser:
         For variety, set shuffle_output to true
         """
         data = self._traverse_tree_for_write(root)
+        # For DAGs, multiple paths lead to the safe node
+        # With our blind traversal, we'll have duplicate lines
+        # For leaf nodes
+        # We can either do a smarter traversal...or just this
         data = [x for x in set(data)]
         if shuffle_output:
             shuffle(data)

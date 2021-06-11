@@ -13,9 +13,16 @@ class TicTacToeBoard:
         self._board = [[TileState.EMPTY for _ in range(3)] for _ in range(3)]
 
     def set(self, row: int, column: int, state: TileState) -> None:
+        """
+        Sets the square at (row, column) to 'state'
+        """
         self._board[row][column] = state
 
     def empty_tiles(self) -> List[Tuple[int, int]]:
+        """
+        Gets all of the empty tiles in the board.
+        Returns a tuple of [row num, column num]
+        """
         empty_tiles = []
         for row in range(3):
             for column in range(3):
@@ -24,9 +31,14 @@ class TicTacToeBoard:
         return empty_tiles
 
     def check_win(self, player: TileState) -> bool:
+        """
+        Checks whether or not 'player' has won by attaining 3 in a row
+        """
         for i in range(3):
+            # Check row
             if self._check_list(self._board[i], player):
                 return True
+            # Check column
             if self._check_column(i, player):
                 return True
         diagonal = [self._board[row][column]
@@ -40,12 +52,21 @@ class TicTacToeBoard:
         return False
 
     def _check_list(self, data: List[TileState], player: TileState) -> bool:
+        """
+        CHeck that all values in the list is equal to 'player'
+        """
         return len([x for x in data if x == player]) == len(data)
 
     def _check_column(self, column: int, player: TileState) -> bool:
+        """
+        Check that all values in a column is equivalent to 'player'
+        """
         return self._check_list(self._get_column(column), player)
 
     def _copy(self) -> 'TicTacToeBoard':
+        """
+        Returns a copy of the board
+        """
         new_board = TicTacToeBoard()
         for row in range(3):
             for column in range(3):
@@ -53,17 +74,30 @@ class TicTacToeBoard:
         return new_board
 
     def _set_row(self, row_num: int, row: List[TileState]) -> None:
+        """
+        Sets row at 'row_num' to 'row'
+        """
         self._board[row_num] = row
 
     def _get_row(self, row_num: int) -> List[TileState]:
+        """
+        Returns a copy of the row at 'row_num'
+        """
         return self._board[row_num].copy()
 
     def _set_column(self, column_num: int,
                     column: List[TileState]) -> None:
+        """
+        Sets the values of the column at 'column_num'
+        to 'column'
+        """
         for i in range(3):
             self._board[i][column_num] = column[i]
 
     def _get_column(self, column_num: int) -> List[TileState]:
+        """
+        Returns the column at 'column_num'
+        """
         return [self._board[x][column_num] for x in range(3)]
 
     def x_flip(self) -> 'TicTacToeBoard':
@@ -95,11 +129,17 @@ class TicTacToeBoard:
         return new_board
 
     def rotate_ccw_90(self) -> 'TicTacToeBoard':
+        """
+        Returns a copy of the board, but rotated ccw 90
+        """
         new_board = self._copy()
         new_board._rotate_ccw_90()
         return new_board
 
     def _rotate_ccw_90(self) -> None:
+        """
+        Rotates self ccw 90
+        """
         left_column = self._get_column(0)
         bottom_row = self._get_row(2)
         right_column = self._get_column(2)
@@ -112,18 +152,24 @@ class TicTacToeBoard:
         self._set_column(0, top_row)
 
     def rotate_ccw_180(self) -> 'TicTacToeBoard':
+        """
+        Returns a copy of the board, but rotated ccw 180
+        """
         new_board = self.rotate_ccw_90()
         new_board._rotate_ccw_90()
         return new_board
 
     def rotate_ccw_270(self) -> 'TicTacToeBoard':
+        """
+        Returns a copy of the board, but rotated ccw 270
+        """
         new_board = self.rotate_ccw_180()
         new_board._rotate_ccw_90()
         return new_board
 
     def rotate_cw_90(self) -> 'TicTacToeBoard':
         """
-        Create a copy of the current board, and rotates cw 90
+        Returns a copy of the board, but rotated cw 90
         """
         new_board = self._copy()
         new_board._rotate_cw_90()
@@ -146,18 +192,24 @@ class TicTacToeBoard:
 
     def rotate_cw_180(self) -> 'TicTacToeBoard':
         """
-        Create a copy of the current board, and rotates cw 180
+        Returns a copy of the board, but rotated cw 180
         """
         new_board = self.rotate_cw_90()
         new_board._rotate_cw_90()
         return new_board
 
     def rotate_cw_270(self) -> 'TicTacToeBoard':
+        """
+        Returns a copy of the board, but rotated cw 270
+        """
         new_board = self.rotate_cw_180()
         new_board._rotate_cw_90()
         return new_board
 
     def hash(self) -> str:
+        """
+        Generates a string representation of the board
+        """
         flattened = [*self._board[0], *self._board[1], *self._board[2]]
         flattened_str = [str(x) for x in flattened]
         return ';'.join(flattened_str)

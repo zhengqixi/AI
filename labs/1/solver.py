@@ -141,7 +141,7 @@ class Solver:
 
     def _switch_type(self, select_type: 'SolveType') -> 'SolveType':
         """
-        Utility to I don't have to write this if over and over
+        Utility so I don't have to write this if over and over
         """
         if select_type == SolveType.MAX:
             return SolveType.MIN

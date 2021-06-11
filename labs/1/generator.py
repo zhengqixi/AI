@@ -2,6 +2,7 @@ from tictactoe import TicTacToeBoard
 from tictactoe import TileState
 from node import Node
 from parser import Parser
+import argparse
 
 
 class Generator:
@@ -14,6 +15,9 @@ class Generator:
         self._cache = {}
 
     def generate(self) -> Node:
+        """
+        Generate the graph for tic tac toe
+        """
         board = TicTacToeBoard()
         root = Node('')
         self._level(root, board, self._starting_player, 0)
@@ -22,6 +26,9 @@ class Generator:
 
     def _level(self, parent: Node, board: TicTacToeBoard,
                player: TileState, level: int) -> None:
+        """
+        Recursive step for graph generation
+        """
         other_player = self._switch_player(player)
         if level >= self._min_level:
             if board.check_win(other_player):
@@ -48,6 +55,9 @@ class Generator:
         parent.children = [x for x in {x.label: x for x in children}.values()]
 
     def _switch_player(self, player: TileState) -> TileState:
+        """
+        Utility function to swap the player
+        """
         if player == TileState.X:
             return TileState.O
         if player == TileState.O:
@@ -55,9 +65,16 @@ class Generator:
         raise Exception('bruhhhh')
 
     def _notation(self, row: int, column: int) -> str:
+        """
+        Utility function to generate node label
+        """
         return self._column_str[column] + self._row_str[row]
 
     def _value(self, player: TileState) -> int:
+        """
+        Utility function to translate winning player to
+        a value
+        """
         if player == TileState.X:
             return 1
         elif player == TileState.O:
@@ -67,12 +84,18 @@ class Generator:
         raise Exception('bruuhh')
 
     def _check_cache(self, board: TicTacToeBoard) -> Node:
+        """
+        Check if we've already traversed the node
+        """
         hash = board.hash()
         if hash in self._cache:
             return self._cache[hash]
         return None
 
     def _cache_board(self, board: TicTacToeBoard, node: Node) -> None:
+        """
+        Cache board, and equivalent board states
+        """
         self._cache[board.hash()] = node
         self._cache[board.x_flip().hash()] = node
         self._cache[board.y_flip().hash()] = node
@@ -85,6 +108,11 @@ class Generator:
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Generates a tic tac toe DAG, with symmetries reduced'
+    )
+    parser.add_argument('filename', help='File to write DAG to')
+    args = parser.parse_args()
     root = Generator(TileState.X).generate()
-    parser = Parser()
-    parser.write_to_file(root, 'nice.test')
+    writer = Parser()
+    writer.write_to_file(root, args.filename)
