@@ -1,5 +1,5 @@
 # Requirements
-Needs Python3.8 or higher to run. 
+Needs Python3.8 or higher to run. On CIMS machines, use `python3.8` or `python3.9`
 
 ## Overview
 `minimax.py` contains the main command line tool for the minimax solver.
