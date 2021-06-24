@@ -18,6 +18,9 @@ class AST:
     
     def clean_double_not(self) -> 'AST':
         return self
+    
+    def distribute(self) -> None:
+        return None
 
 class BinaryTypes(enum):
     IFF = '<=>'
@@ -72,6 +75,16 @@ class BinaryOperator(AST):
         self._right = self._right.clean_double_not()
         return self
     
+    def distribute(self) -> None:
+        # TODO: While loop
+        # Call distribute on children
+        # If this node fulfills conditions for loop
+        # That is its a OR operator
+        # With one children that is an and
+        # Keep going
+
+        pass
+    
     @property
     def left(self) -> AST:
         return self._left
@@ -111,7 +124,7 @@ class NegateOperator(AST):
             elif curr_operator == BinaryTypes.OR:
                 return BinaryOperator(BinaryTypes.AND, left=new_left, right=new_right).push_not()
             else:
-                raise ASTException('Operator that is not AND/OR detected. Cannot push down NOT')
+                raise ASTException('Should not have non-AND/OR at this stage')
         raise ASTException('Child element is neither atom nor BinaryOperator')
     
     def clean_double_not(self) -> 'AST':
@@ -119,6 +132,12 @@ class NegateOperator(AST):
             return self._child.child.clean_double_not()
         self._child = self._child.clean_double_not()
         return self
+    
+    def distribute(self) -> None:
+        # By this point, all of the children should be atoms 
+        if not isinstance(self._child, Atom):
+            raise ASTException('Should not have non-Atom at this stage')
+        return None
     
     @property
     def child(self) -> AST:
