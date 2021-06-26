@@ -1,30 +1,7 @@
 from typing import List, Tuple
+from literal import Literal
+from itertools import chain
 import argparse
-
-class Literal():
-
-    def __init__(self, atom: str, negation: bool = False) -> None:
-        self._negation = negation
-        self._atom = atom
-
-    def evaluate(self, atom: str, value: bool) -> bool:
-        """
-        If literal is not applicable, returns None
-        else evaluates the value against the literal and returns the result
-        """
-        if atom != self._atom:
-            return None
-        if self._negation:
-            return not value
-        return value
-
-    @property
-    def atom(self) -> str:
-        return self._atom
-
-    @property
-    def negation(self) -> bool:
-        return self._negation
 
 
 class SolverParser():
@@ -33,6 +10,7 @@ class SolverParser():
     def parse(file: str) -> List[List[Literal]]:
         with open(file, 'r') as input:
             lines = [list(filter(None, x.split())) for x in input]
+            lines = [x for x in lines if len(x) != 0]
 
             def to_literal(value: str) -> Literal:
                 if value[0] == '!':
@@ -53,7 +31,8 @@ class Solver():
         result = Solver._solve_step(input, start[1][0], start[1][1])
         if result is None:
             negated = not start[1][1]
-            return Solver._solve_step(input, start[1][0], negated)
+            result = Solver._solve_step(input, start[1][0], negated)
+        return result
 
     @staticmethod
     def _solve_step(sentences: List[List[Literal]],
@@ -62,7 +41,7 @@ class Solver():
         Returns a list of all evaluates values.
         If there is an error, returns none
         """
-        # Copy and filter out False literals 
+        # Copy and filter out False literals
         evaluated = [[Literal(y.atom, y.negation) for y in x if y.evaluate(
             atom, value) != False] for x in sentences]
         # Check for empty values. If they exist, we cannot continue down this
@@ -78,7 +57,8 @@ class Solver():
                 evaluated = literal.evaluate(atom, value)
                 if evaluated == True:
                     # Because all sentences are ORs, only one value needs to be true for the sentence to be true
-                    # This sets the new sentence length to zero, essentially removing it
+                    # This sets the new sentence length to zero, essentially
+                    # removing it
                     new_sentence = []
                     break
                 if evaluated is None:
@@ -86,7 +66,7 @@ class Solver():
             if len(new_sentence) != 0:
                 copied.append(new_sentence)
         if len(copied) == 0:
-            return [[atom, value]] 
+            return [[atom, value]]
         decision = Solver._determine_guess(copied)
         result = Solver._solve_step(copied, decision[1][0], decision[1][1])
         if result is None and decision[0]:
@@ -119,10 +99,11 @@ class Solver():
             if selected.negation:
                 return [True, [selected.atom, False]]
             return [True, [selected.atom, True]]
-        atoms = [atom for sentence in sentences for atom in sentence]
+        atoms = [atom for atom in chain.from_iterable(sentences)]
         atoms.sort(key=lambda x: x.atom)
         selected = atoms[0]
         return [False, [selected.atom, True]]
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -135,6 +116,7 @@ if __name__ == '__main__':
     result = Solver.solve(sentences)
     if result is None:
         print('NO VALID ASSIGNMENT')
+        exit() 
     result.sort(key=lambda x: x[0])
     for i in result:
         print('{}={}'.format(i[0], i[1]))
