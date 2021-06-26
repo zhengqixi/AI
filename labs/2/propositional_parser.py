@@ -6,4 +6,9 @@ class Parser:
         self._file = file
     
     def parse(self) -> List[PropositionalAST]:
+        with open(self._file, 'r') as input:
+            lines = [y for y in filter(None, [x.strip() for x in input])]
+            return [x for x in map(self._parse_line, lines)]
+    
+    def _parse_line(self, line: str) -> PropositionalAST:
         pass

@@ -177,7 +177,7 @@ class NegateOperator(PropositionalAST):
         if isinstance(self._child, NegateOperator):
             return self._child.child.push_not()
         raise PropositionalASTException(
-            'Child element is neither atom nor BinaryOperator')
+            'Unexpected type: {}'.format(repr(self._child)))
 
     def clean_double_not(self) -> 'PropositionalAST':
         if isinstance(self._child, NegateOperator):
