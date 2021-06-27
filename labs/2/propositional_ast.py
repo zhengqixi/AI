@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Union
 
 
 class PropositionalASTException(Exception):
@@ -24,7 +25,7 @@ class PropositionalAST:
 
     def distribute(self) -> None:
         return None
-    
+
     def to_cnf(self) -> 'PropositionalAST':
         node = self.copy()
         node = self.clean_double_not()
@@ -35,15 +36,23 @@ class PropositionalAST:
         return node
 
 
-class BinaryTypes(Enum):
+class BinaryPropositionalOperator(Enum):
     IFF = '<=>'
     IF = '=>'
     OR = '|'
     AND = '&'
 
 
+class SingularPropositionalOperator(Enum):
+    NOT = '!'
+
+
+PropositionalOperators = [
+    x for x in SingularPropositionalOperator] + [x for x in BinaryPropositionalOperator]
+
+
 class BinaryOperator(PropositionalAST):
-    def __init__(self, operator: BinaryTypes, left: PropositionalAST,
+    def __init__(self, operator: BinaryPropositionalOperator, left: PropositionalAST,
                  right: PropositionalAST) -> None:
         super().__init__()
         self._operator = operator
@@ -56,18 +65,18 @@ class BinaryOperator(PropositionalAST):
         return BinaryOperator(self._operator, new_left, new_right)
 
     def remove_iffs(self) -> None:
-        if self._operator == BinaryTypes.IFF:
-            self._operator = BinaryTypes.AND
+        if self._operator == BinaryPropositionalOperator.IFF:
+            self._operator = BinaryPropositionalOperator.AND
             new_left_right = self._left.copy()
             new_left_left = self._right.copy()
             new_right_right = self._right.copy()
             new_right_left = self._left.copy()
             self._left = BinaryOperator(
-                BinaryTypes.IF,
+                BinaryPropositionalOperator.IF,
                 left=new_left_left,
                 right=new_left_right)
             self._right = BinaryOperator(
-                BinaryTypes.IF,
+                BinaryPropositionalOperator.IF,
                 left=new_right_left,
                 right=new_right_right)
         self._left.remove_iffs()
@@ -75,8 +84,8 @@ class BinaryOperator(PropositionalAST):
         return None
 
     def remove_ifs(self) -> None:
-        if self._operator == BinaryTypes.IF:
-            self._operator = BinaryTypes.OR
+        if self._operator == BinaryPropositionalOperator.IF:
+            self._operator = BinaryPropositionalOperator.OR
             # Account for double negation here
             if isinstance(self._left, NegateOperator):
                 self._left = self._left.child
@@ -99,30 +108,30 @@ class BinaryOperator(PropositionalAST):
     def distribute(self) -> None:
         self._left.distribute()
         self._right.distribute()
-        if self._operator == BinaryTypes.AND:
+        if self._operator == BinaryPropositionalOperator.AND:
             return
-        if self._operator != BinaryTypes.OR:
+        if self._operator != BinaryPropositionalOperator.OR:
             raise PropositionalASTException(
                 'Should not have non-AND/OR at this stage')
         and_child = None
         to_distribute_child = None
         if isinstance(
-                self._left, BinaryOperator) and self._left.operator == BinaryTypes.AND:
+                self._left, BinaryOperator) and self._left.operator == BinaryPropositionalOperator.AND:
             and_child = self._left
             to_distribute_child = self._right
-        elif isinstance(self._right, BinaryOperator) and self._right.operator == BinaryTypes.AND:
+        elif isinstance(self._right, BinaryOperator) and self._right.operator == BinaryPropositionalOperator.AND:
             and_child = self._right
             to_distribute_child = self._left
         if and_child is not None and to_distribute_child is not None:
-            self._operator = BinaryTypes.AND
+            self._operator = BinaryPropositionalOperator.AND
             and_child_left_child = and_child.left
             and_child_right_child = and_child.right
             new_left = BinaryOperator(
-                BinaryTypes.OR,
+                BinaryPropositionalOperator.OR,
                 to_distribute_child,
                 and_child_left_child)
             new_right = BinaryOperator(
-                BinaryTypes.OR,
+                BinaryPropositionalOperator.OR,
                 to_distribute_child,
                 and_child_right_child)
             self._left = new_left
@@ -139,7 +148,7 @@ class BinaryOperator(PropositionalAST):
         return self._right
 
     @property
-    def operator(self) -> BinaryTypes:
+    def operator(self) -> BinaryPropositionalOperator:
         return self._operator
 
 
@@ -165,12 +174,12 @@ class NegateOperator(PropositionalAST):
             curr_operator = self._child.operator
             new_left = NegateOperator(self._child.left)
             new_right = NegateOperator(self._child.right)
-            if curr_operator == BinaryTypes.AND:
+            if curr_operator == BinaryPropositionalOperator.AND:
                 return BinaryOperator(
-                    BinaryTypes.OR, left=new_left, right=new_right).push_not()
-            elif curr_operator == BinaryTypes.OR:
+                    BinaryPropositionalOperator.OR, left=new_left, right=new_right).push_not()
+            elif curr_operator == BinaryPropositionalOperator.OR:
                 return BinaryOperator(
-                    BinaryTypes.AND, left=new_left, right=new_right).push_not()
+                    BinaryPropositionalOperator.AND, left=new_left, right=new_right).push_not()
             else:
                 raise PropositionalASTException(
                     'Should not have non-AND/OR at this stage')
@@ -204,7 +213,7 @@ class Atom(PropositionalAST):
 
     def copy(self) -> 'Atom':
         return Atom(self._atom)
-    
+
     @property
     def atom(self) -> str:
         return self._atom

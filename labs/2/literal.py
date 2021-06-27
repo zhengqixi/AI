@@ -27,4 +27,3 @@ class Literal():
         if self._negation:
             return '!{}'.format(self._atom)
         return self._atom
-

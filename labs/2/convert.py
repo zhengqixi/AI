@@ -1,13 +1,15 @@
 from typing import List
-from propositional_ast import NegateOperator, PropositionalAST, BinaryOperator, BinaryTypes, Atom
+from propositional_ast import NegateOperator, PropositionalAST, BinaryOperator, BinaryPropositionalOperator, Atom
 from propositional_parser import Parser
 from literal import Literal
 from itertools import chain
 import argparse
 
+
 class ConvertException(Exception):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
+
 
 class Root:
     def __init__(self, children: List[PropositionalAST]) -> None:
@@ -15,38 +17,41 @@ class Root:
 
     def _to_cnf(self) -> List[PropositionalAST]:
         return [x.to_cnf() for x in self._children]
-    
+
     def to_literals(self) -> List[List[Literal]]:
         children = self._to_cnf()
         results = [self._to_literals(x) for x in children]
         literals = [x for x in chain.from_iterable(results)]
         # Sort literals in order
         for x in literals:
-            x.sort(key= lambda x : x.atom)
+            x.sort(key=lambda x: x.atom)
         # Use dictionary to remove duplicates
-        filtered = {''.join([str(y) for y in x]):x for x in literals}
+        filtered = {''.join([str(y) for y in x]): x for x in literals}
         filtered_literals = [x for x in filtered.values()]
-        return filtered_literals 
+        return filtered_literals
 
     def _to_literals(self, node: PropositionalAST) -> List[List[Literal]]:
         if isinstance(node, Atom):
             return [[Literal(node.atom)]]
         if isinstance(node, NegateOperator):
             if not isinstance(node.child, Atom):
-                raise ConvertException('Should not have negate operators with non atoms')
+                raise ConvertException(
+                    'Should not have negate operators with non atoms')
             return [[Literal(node.child.atom, negation=True)]]
         if isinstance(node, BinaryOperator):
             left = self._to_literals(node.left)
             right = self._to_literals(node.right)
-            if node.operator == BinaryTypes.OR:
+            if node.operator == BinaryPropositionalOperator.OR:
                 # We take the left and right results, and append together
                 # to form one sentence
                 return [left[0] + right[0]]
-            elif node.operator == BinaryTypes.AND:
+            elif node.operator == BinaryPropositionalOperator.AND:
                 return left + right
             else:
-                raise ConvertException('Should not have non AND/OR BinaryOperators')
-        raise ConvertException('There are literally no other types defined...how can???')
+                raise ConvertException(
+                    'Should not have non AND/OR BinaryOperators')
+        raise ConvertException(
+            'There are literally no other types defined...how can???')
 
 
 if __name__ == '__main__':

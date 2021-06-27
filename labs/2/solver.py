@@ -116,7 +116,7 @@ if __name__ == '__main__':
     result = Solver.solve(sentences)
     if result is None:
         print('NO VALID ASSIGNMENT')
-        exit() 
+        exit()
     result.sort(key=lambda x: x[0])
     for i in result:
         print('{}={}'.format(i[0], i[1]))
