@@ -77,6 +77,7 @@ class TransitionModel:
                 row[transition_index] = edge[1]
         return matrix
 
+    @property
     def rewards(self) -> npt.NDArray:
         return self._rewards
     
@@ -118,12 +119,16 @@ class TransitionModel:
             edge_parsed = [x for x in edge_parsed if not x.isspace()]
             nodes[node].edges = edge_parsed
         # Iterate through all the nodes and do validation
-        return TransitionModel([x for x in nodes.values()])
+        nodes_list = [x for x in nodes.values()]
+        nodes_list.sort(key=lambda x : x.name)
+        return TransitionModel(nodes_list)
 
 if __name__ == '__main__':
     model = TransitionModel.from_file('test1.test')
     nodes = model.nodes
-    print(nodes)
+    print([x.name for x in nodes])
     policy = {'B': 'A'}
     transition = model.probability_matrix(policy)
     print(transition)
+    rewards = model.rewards
+    print(rewards)
