@@ -3,3 +3,4 @@ Input
 Output
 hw/*
 *.test
+*.env*
