@@ -1,6 +1,6 @@
 PYTHON= ./.env/bin/python
 
-chmod:
+chmod: numpy
 	chmod +x mdp
 
 numpy: pip
