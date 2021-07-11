@@ -51,13 +51,13 @@ if __name__ == '__main__':
                     value_iter=args.iter,
                     min=args.min
                     )
-    result = solver.solve()
-    policies = [x for x in result[0].keys()]
+    policy, values = solver.solve()
+    policies = [x for x in policy.keys()]
     policies.sort()
     for x in policies:
-        print('{} -> {}'.format(x, result[0][x]))
+        print('{} -> {}'.format(x, policy[x]))
     print(' ')
     nodes = [x.name for x in model.nodes]
     node_values = ['{}={}'.format(name, value)
-                   for name, value in zip(nodes, result[1])]
+                   for name, value in zip(nodes, values)]
     print(' '.join(node_values))
