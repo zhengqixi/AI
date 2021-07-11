@@ -58,6 +58,6 @@ if __name__ == '__main__':
         print('{} -> {}'.format(x, policy[x]))
     print(' ')
     nodes = [x.name for x in model.nodes]
-    node_values = ['{}={}'.format(name, value)
+    node_values = ['{}={}'.format(name, round(value, 3))
                    for name, value in zip(nodes, values)]
     print(' '.join(node_values))

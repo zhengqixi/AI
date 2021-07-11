@@ -12,3 +12,5 @@ install:
 pip: install
 	$(PYTHON) -m pip install --upgrade pip
 
+clean:
+	rm -rf __pycache__ .env *.test

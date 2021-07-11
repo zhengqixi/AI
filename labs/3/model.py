@@ -98,6 +98,7 @@ class TransitionModel:
         lines = input.readlines()
         input.close()
         lines = [x for x in lines if not x.isspace()]
+        lines = [x for x in lines if not x.startswith('#')]
         rewards = [x.split('=') for x in lines if '=' in x]
         edges = [x.split(':') for x in lines if ':' in x]
         probabilities = [x.split('%') for x in lines if '%' in x]
