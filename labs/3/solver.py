@@ -60,14 +60,3 @@ class Solver:
         if self._min:
             return min(rewards, key=lambda x: x[1])[0]
         return max(rewards, key=lambda x: x[1])[0]
-
-
-if __name__ == '__main__':
-    test_file = 'test7.test'
-    model = TransitionModel.from_file(test_file)
-    solver = Solver(model, 0.9, 200, 0.001, False)
-    result = solver.solve()
-    print(result[0])
-    nodes = model.nodes
-    for i, node in enumerate(nodes):
-        print('{}:{}'.format(node.name, result[1][i]))  # type: ignore

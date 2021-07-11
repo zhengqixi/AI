@@ -129,14 +129,3 @@ class TransitionModel:
                 node.transition_probabilities = [1.0]
         # Iterate through all the nodes and do validation
         return TransitionModel(nodes_list)
-
-
-if __name__ == '__main__':
-    model = TransitionModel.from_file('test1.test')
-    nodes = model.nodes
-    print([x.name for x in nodes])
-    policy = {'B': 'A'}
-    transition = model.probability_matrix(policy)
-    print(transition)
-    rewards = model.rewards
-    print(rewards)
